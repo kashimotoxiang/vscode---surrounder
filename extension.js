@@ -11,13 +11,15 @@ function edit(mode) {
     let startLine = lines[0];
     let firstLineNumber = startLine.lineNumber;
     let endLine = lines[lines.length - 1];
+
+    let lang = editor.document.languageId.toLowerCase();
     if (mode == "IF") {
         editor.edit(currentText => {
-            currentText.replace(startLine.range.union(endLine.range), surroundWithIf(selection));
+            currentText.replace(startLine.range.union(endLine.range), surroundWithIf(selection, lang));
         });
     } else if (mode == "TRY") {
         editor.edit(currentText => {
-            currentText.replace(startLine.range.union(endLine.range), surroundWithTry(selection));
+            currentText.replace(startLine.range.union(endLine.range), surroundWithTry(selection, lang));
         });
     }
     editor.edit(currentText => {
@@ -35,31 +37,53 @@ function activate(context) {
 }
 exports.activate = activate;
 
-function surroundWithIf(selection) {
+function surroundWithIf(selection, lang) {
     let lines = getSelectLines(selection);
     const {
         prefix
     } = getPrefixAndIndent(lines[0]);
-    return [
-        `${prefix}if (condition) {`,
-        ...indentLines(lines),
-        `${prefix}}`
-    ].join('\n');
+    if (lang == 'python') {
+        return [
+            `${prefix}if (condition):`,
+            ...indentLines(lines),
+            `${prefix}}`
+        ].join('\n');
+    } else if (lang == 'javascript') {
+        return [
+            `${prefix}if (condition) {`,
+            ...indentLines(lines),
+            `${prefix}}`
+        ].join('\n');
+    }
+    return lines
 }
 
-function surroundWithTry(selection) {
+function surroundWithTry(selection, lang) {
     let lines = getSelectLines(selection);
     const {
         prefix,
         indent
     } = getPrefixAndIndent(lines[0]);
-    return [
-        `${prefix}try {`,
-        ...indentLines(lines),
-        `${prefix}} catch (error) {`,
-        `${prefix}${indent}console.error(error)`,
-        `${prefix}}`,
-    ].join('\n');
+    if (lang == 'python') {
+        return [
+            `${prefix}try:`,
+            ...indentLines(lines),
+            `${prefix}} except Exception as e:`,
+            `${prefix}${indent}print(error)`,
+            `${prefix}}`,
+        ].join('\n');
+    } else if (lang == 'javascript') {
+        return [
+            `${prefix}try {`,
+            ...indentLines(lines),
+            `${prefix}} catch (error) {`,
+            `${prefix}${indent}console.error(error)`,
+            `${prefix}}`,
+        ].join('\n');
+    }
+    return lines
+
+
 }
 
 function getCurrentLineSelection(selection) {
