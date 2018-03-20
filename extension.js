@@ -27,43 +27,45 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 };
 const vscode = require("vscode");
 
+function editer() {
+    let editor = vscode.window.activeTextEditor;
+    let selection = editor.selection;
+    if (selection.isEmpty) {
+        selection = getCurrentLineSelection(selection);
+    }
+    let lines = getSelectLines(selection);
+    let startLine = lines[0];
+    let catchBodyLineNumber = lines.length + 2;
+    let endLine = lines[lines.length - 1];
+    editor.edit(currentText => {
+        currentText.replace(startLine.range.union(endLine.range), surroundWithTry(selection));
+    });
+    editor.edit(currentText => {
+        const catchLine = editor.document.lineAt(catchBodyLineNumber);
+        editor.selection = new vscode.Selection(new vscode.Position(catchLine.lineNumber, catchLine.firstNonWhitespaceCharacterIndex), new vscode.Position(catchLine.lineNumber, catchLine.firstNonWhitespaceCharacterIndex + catchLine.text.length));
+    });
+}
+
 function activate(context) {
     let ifSurround = vscode.commands.registerCommand('extension.surroundWithIf', () => __awaiter(this, void 0, void 0, function* () {
-        const editor = vscode.window.activeTextEditor;
+        let editor = vscode.window.activeTextEditor;
         let selection = editor.selection;
         if (selection.isEmpty) {
             selection = getCurrentLineSelection(selection);
         }
-        const lines = getSelectLines(selection);
-        const startLine = lines[0];
-        const firstLineNumber = startLine.lineNumber;
-        const endLine = lines[lines.length - 1];
-        yield editor.edit(currentText => {
+        let lines = getSelectLines(selection);
+        let startLine = lines[0];
+        let firstLineNumber = startLine.lineNumber;
+        let endLine = lines[lines.length - 1];
+        editor.edit(currentText => {
             currentText.replace(startLine.range.union(endLine.range), surroundWithIf(selection));
         });
-        yield editor.edit(currentText => {
+        editor.edit(currentText => {
             const firstLine = editor.document.lineAt(firstLineNumber);
             editor.selection = new vscode.Selection(new vscode.Position(firstLine.lineNumber, firstLine.firstNonWhitespaceCharacterIndex + 4), new vscode.Position(firstLine.lineNumber, firstLine.firstNonWhitespaceCharacterIndex + 13));
         });
     }));
-    let trySurround = vscode.commands.registerCommand('extension.surroundWithTry', () => __awaiter(this, void 0, void 0, function* () {
-        const editor = vscode.window.activeTextEditor;
-        let selection = editor.selection;
-        if (selection.isEmpty) {
-            selection = getCurrentLineSelection(selection);
-        }
-        const lines = getSelectLines(selection);
-        const startLine = lines[0];
-        const catchBodyLineNumber = lines.length + 2;
-        const endLine = lines[lines.length - 1];
-        yield editor.edit(currentText => {
-            currentText.replace(startLine.range.union(endLine.range), surroundWithTry(selection));
-        });
-        yield editor.edit(currentText => {
-            const catchLine = editor.document.lineAt(catchBodyLineNumber);
-            editor.selection = new vscode.Selection(new vscode.Position(catchLine.lineNumber, catchLine.firstNonWhitespaceCharacterIndex), new vscode.Position(catchLine.lineNumber, catchLine.firstNonWhitespaceCharacterIndex + catchLine.text.length));
-        });
-    }));
+    let trySurround = vscode.commands.registerCommand('extension.surroundWithTry', () => edit());
     context.subscriptions.push(ifSurround);
     context.subscriptions.push(trySurround);
 }
