@@ -46,7 +46,7 @@ function surroundWithIf(selection, lang) {
         return [
             `${prefix}if (condition):`,
             ...indentLines(lines),
-            `${prefix}}`
+            `${prefix}`
         ].join('\n');
     } else if (lang == 'javascript') {
         return [
@@ -68,9 +68,9 @@ function surroundWithTry(selection, lang) {
         return [
             `${prefix}try:`,
             ...indentLines(lines),
-            `${prefix}} except Exception as e:`,
+            `${prefix}except Exception as e:`,
             `${prefix}${indent}print(error)`,
-            `${prefix}}`,
+            `${prefix}`,
         ].join('\n');
     } else if (lang == 'javascript') {
         return [
