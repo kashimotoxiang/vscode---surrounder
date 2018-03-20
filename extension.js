@@ -122,3 +122,22 @@ function indentLines(lines) {
     return lines.map(line => prefix + line.text);
 }
 //# sourceMappingURL=extension.js.map
+function getIndentString(lineNumber) {
+    let doc = vscode.window.activeTextEditor.document;
+    if (doc.lineCount > lineNumber && lineNumber >= 0)
+        return (doc.lineAt(lineNumber).text.match(/^\s+/) || ['']).shift();
+    return '';
+}
+
+function getWrapper(lang) {
+    let list = vscode.workspace.getConfiguration("debugwrapper.wrappers");
+    var wrapper = list[lang.toLowerCase()] || list['default'];
+    return wrapper;
+}
+exports.getWrapper = getWrapper;
+
+function wrapText(selection, wrapper) {
+    return wrapper
+        .replace(/\$eSEL/g, selection.replace(/(\"|')/g, "\\$1")).replace(/\$SEL/g, selection);
+}
+exports.wrapText = wrapText;
