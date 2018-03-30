@@ -69,7 +69,7 @@ function surroundWithTry(selection, lang) {
             `${prefix}try:`,
             ...indentLines(lines),
             `${prefix}except Exception as e:`,
-            `${prefix}${indent}print(error)`,
+            `${prefix}${indent}print(e)`,
             `${prefix}`,
         ].join('\n');
     } else if (lang == 'javascript') {
